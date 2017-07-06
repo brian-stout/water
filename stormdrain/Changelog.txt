@@ -1,0 +1,5 @@
+START
+
+-Rewriting
+-Starting with a base from  pretreatment.py
+-
