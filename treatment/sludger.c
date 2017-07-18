@@ -1,5 +1,5 @@
 
-#include <libscrypt.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -8,6 +8,7 @@
 
 #include "networking.h"
 #include "structs.h"
+#include "libscrypt.h"
 
 int main(void)
 {
@@ -74,6 +75,7 @@ printf("'%s'\n", buf);
 			goto done;
 		}
 
+        head.type = 2;
 		write(osludge, &head, sizeof(head));
 		write(osludge, hashes, items * sizeof(*hashes));
 

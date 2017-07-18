@@ -159,18 +159,19 @@ class Liquid:
         for key in self.data:
             if is_undu(self.data[key][0]) == True:
                 temp_list.append(key)
+                self.sludge_mat[key] = self.data[key]
 
         for key in temp_list:
             print("Removing Ammonia")
-            self.sludge_mat[key] = self.data[key]
             self.data.pop(key, None)
 
     def treat_feces(self):
+        temp_list = []
         for key in self.data:
             if is_prime(self.data[key][0]) == True:
                 temp_list.append(key)
+                self.sludge_mat[key] = self.data[key]
 
         for key in temp_list:
             print("Removing Ammonia")
-            self.sludge_mat[key] = self.data[key]
             self.data.pop(key, None)
