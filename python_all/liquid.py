@@ -1,6 +1,14 @@
 #!/usr/local/bin/python
 
 import struct
+import math
+
+#Source: siafoo.net/snippet/145
+def is_triangle(n):
+    x = (math.sqrt(8*n + 1) - 1) /2
+    if x - int(x) > 0:
+        return False
+    return int(x)
 
 def is_undu(number):
     last_digit = 0
@@ -68,10 +76,11 @@ class Node:
 class Liquid:
     def __init__(self, blob):
         self.slots = len(blob)//8
+        print(self.slots)
         raw_data = struct.unpack("!" + "LHH"*self.slots, blob)
  
         self.hazmats = set()
-        self.sludge_mat = dict()
+        self.sludge_mats = dict()
 
         self.data = {i//3+1: list(raw_data[i:i+3]) for i in
                 range(0, len(raw_data), 3) if raw_data[i]}
@@ -99,7 +108,10 @@ class Liquid:
 
 
     def treat_pb(self):
-        pass
+        for record in self.data:
+            val = self.data[record][0]
+            if is_triangle(val):
+                
 
     def treat_hg(self):
         '''Multiple roots in graph'''
@@ -120,13 +132,20 @@ class Liquid:
             self.treat_hg()
 
     def serialize_water(self):
-        for n in range(self.slots):
-            n += 1
-            if n not in self.data:
-                self.data[n] = (0,0,0)
-
-        array = (x for n in range(self.slots) for x in self.data[n+1])
+        array = []
+        for record in self.data:
+            array.append(self.data[record][0])
+            array.append(self.data[record][1])
+            array.append(self.data[record][2])
         return struct.pack("!" + "LHH"*len(self.data), *array)
+
+    def serialize_sludge(self):
+        array = []
+        for record in self.sludge_mats:
+            array.append(self.sludge_mats[record][0])
+            array.append(self.sludge_mats[record][1])
+            array.append(self.sludge_mats[record][2])
+        return struct.pack("!" + "LHH"*len(self.sludge_mats), *array)
 
     def serialize_hazmat(self):
         array = (x for val in self.hazmats for x in (val,0))
@@ -137,11 +156,13 @@ class Liquid:
 
         for key in self.data:
             if self.data[key][1] not in self.data:
-                ret_bool = True
-                self.data[key][1] = 0xFFFF
+                if self.data[key][1] != 0:
+                    ret_bool = True
+                    self.data[key][1] = 0xFFFF
             if self.data[key][2] not in self.data:
-                ret_bool = True
-                self.data[key][2] = 0xFFFF
+                if self.data[key][2] != 0:
+                    ret_bool = True
+                    self.data[key][2] = 0xFFFF
 
         return ret_bool
 
@@ -153,16 +174,16 @@ class Liquid:
 
         for key in temp_list:
             self.data.pop(key, None)
+            self.slots -= 1
 
     def treat_ammonia(self):
         temp_list = []
         for key in self.data:
             if is_undu(self.data[key][0]) == True:
                 temp_list.append(key)
-                self.sludge_mat[key] = self.data[key]
+                self.sludge_mats[key] = self.data[key]
 
         for key in temp_list:
-            print("Removing Ammonia")
             self.data.pop(key, None)
 
     def treat_feces(self):
@@ -170,8 +191,7 @@ class Liquid:
         for key in self.data:
             if is_prime(self.data[key][0]) == True:
                 temp_list.append(key)
-                self.sludge_mat[key] = self.data[key]
+                self.sludge_mats[key] = self.data[key]
 
         for key in temp_list:
-            print("Removing Ammonia")
             self.data.pop(key, None)
